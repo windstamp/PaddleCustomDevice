@@ -169,6 +169,29 @@ inline void TensorFromVector<bool>(const phi::CustomContext& ctx,
 }
 
 /**
+ * NPU -> CPU
+*/
+template <typename T>
+inline void TensorToVector(const phi::CustomContext& ctx,
+                             const phi::DenseTensor& src,
+                             const phi::CustomContext& dev_ctx,
+                             std::vector<T>* dst) {
+  auto src_place = dev_ctx.GetPlace();
+  PADDLE_THROW(phi::errors::Unimplemented(
+      "TensorToVector on %s is not supported.", src_place));
+}
+
+template <>
+inline void TensorToVector<bool>(const phi::CustomContext& ctx,
+                             const phi::DenseTensor& src,
+                             const phi::CustomContext& dev_ctx,
+                             std::vector<bool>* dst) {
+  auto src_place = dev_ctx.GetPlace();
+  PADDLE_THROW(phi::errors::Unimplemented(
+      "TensorToVector on %s is not supported.", src_place));
+}
+
+/**
  * CPU -> NPU
 */
 template <typename T>
@@ -333,4 +356,49 @@ inline phi::DataLayout StringToDataLayout(const std::string& str) {
   } else {
   }
 }
+
+inline void ExtractNCDWH(const phi::DDim& dims,
+                         const phi::DataLayout& data_layout,
+                         int* N,
+                         int* C,
+                         int* D,
+                         int* H,
+                         int* W) {
+  *N = dims[0];
+
+  if (dims.size() == 3) {
+    *C = data_layout == phi::DataLayout::kNCHW ? dims[1] : dims[2];
+    *D = 1;
+    *H = 1;
+    *W = data_layout == phi::DataLayout::kNCHW ? dims[2] : dims[1];
+  } else if (dims.size() == 4) {
+    *C = data_layout == phi::DataLayout::kNCHW ? dims[1] : dims[3];
+    *D = 1;
+    *H = data_layout == phi::DataLayout::kNCHW ? dims[2] : dims[1];
+    *W = data_layout == phi::DataLayout::kNCHW ? dims[3] : dims[2];
+  } else {
+    *C = data_layout == phi::DataLayout::kNCHW ? dims[1] : dims[4];
+    *D = data_layout == phi::DataLayout::kNCHW ? dims[2] : dims[1];
+    *H = data_layout == phi::DataLayout::kNCHW ? dims[3] : dims[2];
+    *W = data_layout == phi::DataLayout::kNCHW ? dims[4] : dims[3];
+  }
+}
+
+template <typename T>
+inline std::vector<T> get_new_data_from_tensor(
+    const phi::DenseTensor* new_data_tensor) {
+  std::vector<T> vec_new_data;
+//   auto* new_data = new_data_tensor->data<T>();
+//   phi::DenseTensor cpu_starts_tensor;
+// #ifdef PADDLE_WITH_ASCEND_CL
+//   if (paddle::platform::is_npu_place(new_data_tensor->place())) {
+//     paddle::framework::TensorCopySync(
+//         *new_data_tensor, paddle::platform::CPUPlace(), &cpu_starts_tensor);
+//     new_data = cpu_starts_tensor.data<T>();
+//   }
+// #endif
+//   vec_new_data = std::vector<T>(new_data, new_data + new_data_tensor->numel());
+  return vec_new_data;
+}
+
 }  // namespace custom_kernel
