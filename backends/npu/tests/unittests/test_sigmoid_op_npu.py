@@ -25,8 +25,6 @@ paddle.enable_static()
 SEED = 2021
 
 
-@unittest.skipIf(not paddle.is_compiled_with_npu(),
-                 "core is not compiled with NPU")
 class TestNPUSigmoid(OpTest):
     def setUp(self):
         self.op_type = "sigmoid"
@@ -49,14 +47,13 @@ class TestNPUSigmoid(OpTest):
 
     def set_npu(self):
         self.__class__.use_custom_device = True
+        self.__class__.no_need_check_grad = True
         self.place = paddle.CustomPlace('ascend', 0)
 
     def init_dtype(self):
         self.dtype = np.float32
 
 
-@unittest.skipIf(not paddle.is_compiled_with_npu(),
-                 "core is not compiled with NPU")
 class TestNPUSigmoidFp16(TestNPUSigmoid):
     def test_check_output(self):
         self.check_output_with_place(self.place, atol=1e-3)
