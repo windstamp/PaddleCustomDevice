@@ -20,17 +20,18 @@
 #include "kernels/funcs/npu_enforce.h"
 #include "kernels/funcs/npu_funcs.h"
 
-static std::map<paddle::experimental::DataType, aclDataType> DTYPE_2_ACL_DTYPE =
-    {
-        {paddle::experimental::DataType::BOOL, ACL_BOOL},
-        {paddle::experimental::DataType::UINT8, ACL_UINT8},
-        {paddle::experimental::DataType::INT8, ACL_INT8},
-        {paddle::experimental::DataType::INT16, ACL_INT16},
-        {paddle::experimental::DataType::INT32, ACL_INT32},
-        {paddle::experimental::DataType::INT64, ACL_INT64},
-        {paddle::experimental::DataType::FLOAT16, ACL_FLOAT16},
-        {paddle::experimental::DataType::FLOAT32, ACL_FLOAT},
-        {paddle::experimental::DataType::FLOAT64, ACL_DOUBLE},
+// Just for cpplint style check
+using StyleDataType = paddle::experimental::DataType;
+static std::map<StyleDataType, aclDataType> DTYPE_2_ACL_DTYPE = {
+    {paddle::experimental::DataType::BOOL, ACL_BOOL},
+    {paddle::experimental::DataType::UINT8, ACL_UINT8},
+    {paddle::experimental::DataType::INT8, ACL_INT8},
+    {paddle::experimental::DataType::INT16, ACL_INT16},
+    {paddle::experimental::DataType::INT32, ACL_INT32},
+    {paddle::experimental::DataType::INT64, ACL_INT64},
+    {paddle::experimental::DataType::FLOAT16, ACL_FLOAT16},
+    {paddle::experimental::DataType::FLOAT32, ACL_FLOAT},
+    {paddle::experimental::DataType::FLOAT64, ACL_DOUBLE},
 };
 
 static std::map<paddle::experimental::DataLayout, aclFormat>
@@ -211,7 +212,7 @@ NpuOpRunner &NpuOpRunner::AddInput(const phi::DenseTensor &tensor,
 }
 
 NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
-                                   std::vector<int32_t> &&dims) {
+                                   const std::vector<int32_t> &&dims) {
   phi::DenseTensor host_tensor;
   custom_kernel::TensorFromVector(
       dev_ctx, dims, phi::CPUContext(), &host_tensor);
@@ -226,7 +227,7 @@ NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
 }
 
 NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
-                                   std::vector<int64_t> &&dims) {
+                                   const std::vector<int64_t> &&dims) {
   phi::DenseTensor host_tensor;
   custom_kernel::TensorFromVector(
       dev_ctx, dims, phi::CPUContext(), &host_tensor);
@@ -241,7 +242,7 @@ NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
 }
 
 NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
-                                   std::vector<float> &&values) {
+                                   const std::vector<float> &&values) {
   phi::DenseTensor host_tensor;
   custom_kernel::TensorFromVector(
       dev_ctx, values, phi::CPUContext(), &host_tensor);
@@ -256,7 +257,7 @@ NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
 }
 
 NpuOpRunner &NpuOpRunner::AddInput(const phi::CustomContext &dev_ctx,
-                                   std::vector<double> &&values) {
+                                   const std::vector<double> &&values) {
   phi::DenseTensor host_tensor;
   custom_kernel::TensorFromVector(
       dev_ctx, values, phi::CPUContext(), &host_tensor);
