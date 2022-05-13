@@ -18,11 +18,11 @@
 namespace custom_kernel {
 
 template <typename T, typename Context>
-void MultiplyRawKernel(const Context& dev_ctx,
-                       const phi::DenseTensor& x,
-                       const phi::DenseTensor& y,
-                       int axis,
-                       phi::DenseTensor* out) {
+void MultiplyRawKernel2(const Context& dev_ctx,
+                        const phi::DenseTensor& x,
+                        const phi::DenseTensor& y,
+                        int axis,
+                        phi::DenseTensor* out) {
   dev_ctx.template Alloc<T>(out);
 
   bool direct_compute = false;
@@ -48,34 +48,34 @@ void MultiplyRawKernel(const Context& dev_ctx,
 }
 
 template <typename T, typename Context>
-void MultipyKernel(const Context& dev_ctx,
-                   const phi::DenseTensor& x,
-                   const phi::DenseTensor& y,
-                   phi::DenseTensor* out) {
+void MultipyKernel2(const Context& dev_ctx,
+                    const phi::DenseTensor& x,
+                    const phi::DenseTensor& y,
+                    phi::DenseTensor* out) {
   int axis = -1;
-  custom_kernel::MultiplyRawKernel<T>(dev_ctx, x, y, axis, out);
+  custom_kernel::MultiplyRawKernel2<T>(dev_ctx, x, y, axis, out);
 }
 
 }  // namespace custom_kernel
 
-PD_REGISTER_PLUGIN_KERNEL(multiply,
-                          ascend,
-                          ALL_LAYOUT,
-                          custom_kernel::MultipyKernel,
-                          int8_t,
-                          int32_t,
-                          int64_t,
-                          phi::dtype::float16,
-                          float,
-                          double) {}
+// PD_REGISTER_PLUGIN_KERNEL(multiply2,
+//                           ascend,
+//                           ALL_LAYOUT,
+//                           custom_kernel::MultipyKernel2,
+//                           int8_t,
+//                           int32_t,
+//                           int64_t,
+//                           phi::dtype::float16,
+//                           float,
+//                           double) {}
 
-PD_REGISTER_PLUGIN_KERNEL(multiply_raw,
-                          ascend,
-                          ALL_LAYOUT,
-                          custom_kernel::MultiplyRawKernel,
-                          int8_t,
-                          int32_t,
-                          int64_t,
-                          phi::dtype::float16,
-                          float,
-                          double) {}
+// PD_REGISTER_PLUGIN_KERNEL(multiply_raw2,
+//                           ascend,
+//                           ALL_LAYOUT,
+//                           custom_kernel::MultiplyRawKernel2,
+//                           int8_t,
+//                           int32_t,
+//                           int64_t,
+//                           phi::dtype::float16,
+//                           float,
+//                           double) {}
