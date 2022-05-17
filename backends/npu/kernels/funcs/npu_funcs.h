@@ -169,6 +169,29 @@ inline void TensorFromVector<bool>(const phi::CustomContext& ctx,
 }
 
 /**
+ * NPU -> CPU
+*/
+template <typename T>
+inline void TensorToVector(const phi::CustomContext& ctx,
+                             const phi::DenseTensor& src,
+                             const phi::CustomContext& dev_ctx,
+                             std::vector<T>* dst) {
+  auto src_place = dev_ctx.GetPlace();
+  PADDLE_THROW(phi::errors::Unimplemented(
+      "TensorToVector on %s is not supported.", src_place));
+}
+
+template <>
+inline void TensorToVector<bool>(const phi::CustomContext& ctx,
+                             const phi::DenseTensor& src,
+                             const phi::CustomContext& dev_ctx,
+                             std::vector<bool>* dst) {
+  auto src_place = dev_ctx.GetPlace();
+  PADDLE_THROW(phi::errors::Unimplemented(
+      "TensorToVector on %s is not supported.", src_place));
+}
+
+/**
  * CPU -> NPU
 */
 template <typename T>
