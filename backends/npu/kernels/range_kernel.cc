@@ -19,72 +19,52 @@
 
 namespace custom_kernel {
 
-// template <typename T>
-// void GetSize(T start, T end, T step, int64_t* size) {
-//   PADDLE_ENFORCE_NE(step, 0, phi::errors::InvalidArgument(
-//                                  "The step of range op should not be 0."));
-
-//   if (start < end) {
-//     PADDLE_ENFORCE_GT(
-//         step, 0, phi::errors::InvalidArgument(
-//                      "The step should be greater than 0 while start < end."));
-//   }
-
-//   if (start > end) {
-//     PADDLE_ENFORCE_LT(step, 0,
-//                       phi::errors::InvalidArgument(
-//                           "The step should be less than 0 while start > end."));
-//   }
-
-//   *size = std::is_integral<T>::value
-//               ? ((std::abs(end - start) + std::abs(step) - 1) / std::abs(step))
-//               : std::ceil(std::abs((end - start) / step));
-// }
-
 template <typename T, typename Context>
 void ArangeKernel(const Context& dev_ctx,
-               const phi::DenseTensor& start_t,
-               const phi::DenseTensor& end_t,
-               const phi::DenseTensor& step_t,
-               phi::DenseTensor* out) {
+                  const phi::DenseTensor& start_t,
+                  const phi::DenseTensor& end_t,
+                  const phi::DenseTensor& step_t,
+                  phi::DenseTensor* out) {
   auto stream = dev_ctx.stream();
 
-    phi::DenseTensor n;
-    TensorCopy(dev_ctx,
-        start_t, true, &n);
-    T start = n.data<T>()[0];
-    TensorCopy(dev_ctx,
-        end_t, true, &n);
-    T end = n.data<T>()[0];
-    TensorCopy(dev_ctx,
-        step_t, true, &n);
-    T step = n.data<T>()[0];
+  phi::DenseTensor n;
+  n.Resize(start_t.dims());
+  T* n_data = dev_ctx.template HostAlloc<T>(&n);
 
-    int64_t size = 0;
-    // GetSize(start, end, step, &size);
-    phi::funcs::GetSize(start, end, step, &size);
+  TensorCopy(dev_ctx, start_t, true, &n, phi::CPUPlace());
+  T start = n_data[0];
 
-    phi::DenseTensorMeta out_meta = {start_t.dtype(), phi::make_ddim({size})};
-    out->set_meta(out_meta);
-    dev_ctx.template Alloc<T>(out);
+  TensorCopy(dev_ctx, end_t, true, &n, phi::CPUPlace());
+  T end = n_data[0];
 
-    std::vector<T> odata;
-    T value = start;
-    for (int64_t i = 0; i < size; ++i) {
-      odata.push_back(value);
-      value += step;
-    }
+  TensorCopy(dev_ctx, step_t, true, &n, phi::CPUPlace());
+  T step = n_data[0];
 
-    TensorFromVector(dev_ctx, odata, dev_ctx, out);
+  int64_t size = 0;
+  phi::funcs::GetSize(start, end, step, &size);
+
+  out->Resize(phi::make_ddim({size}));
+  dev_ctx.template Alloc<T>(out);
+
+  std::vector<T> odata;
+  T value = start;
+  for (int64_t i = 0; i < size; ++i) {
+    odata.push_back(value);
+    value += step;
+  }
+
+  TensorFromVector(dev_ctx, odata, dev_ctx, out);
 }
 
 }  // namespace custom_kernel
 
-PD_REGISTER_PLUGIN_KERNEL(
-    arange, ascend, ALL_LAYOUT, custom_kernel::ArangeKernel,
-    int,
-#ifdef PADDLE_WITH_ASCEND_INT64
-    int64_t,
-#endif
-    float,
-    double) {}
+PD_REGISTER_PLUGIN_KERNEL(arange,
+                          ascend,
+                          ALL_LAYOUT,
+                          custom_kernel::ArangeKernel,
+                          int,
+                          // #ifdef PADDLE_WITH_ASCEND_INT64
+                          int64_t,
+                          // #endif
+                          float,
+                          double) {}

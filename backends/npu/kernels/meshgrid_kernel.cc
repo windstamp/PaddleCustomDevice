@@ -23,59 +23,63 @@ void MeshgridKernel(const Context& dev_ctx,
                     std::vector<phi::DenseTensor*> outs) {
   auto stream = dev_ctx.stream();
 
-    PADDLE_ENFORCE_EQ(
-        (ins.size() > 1) && (ins.size() < 7), true,
-        phi::errors::InvalidArgument(
-            "Excepted Tensor numbers between 2 and 6, but only received d% .",
-            ins.size()));
+  PADDLE_ENFORCE_EQ(
+      (ins.size() > 1) && (ins.size() < 7),
+      true,
+      phi::errors::InvalidArgument(
+          "Excepted Tensor numbers between 2 and 6, but only received d% .",
+          ins.size()));
 
-    int64_t size = ins.size();
-    std::vector<int64_t> shape(size);
+  int64_t size = ins.size();
+  std::vector<int64_t> shape(size);
 
-    for (int64_t i = 0; i < size; i++) {
-      switch (ins[i]->dims().size()) {
-        case 0:
-          shape[i] = 1;
-          break;
-        case 1:
-          shape[i] = ins[i]->dims()[0];
-          break;
-        default:
-          PADDLE_THROW(phi::errors::InvalidArgument(
-              "Expected scalar or 1D tensor in the tensor list but got tensor "
-              "%d: ",
-              i));
-      }
+  for (int64_t i = 0; i < size; i++) {
+    switch (ins[i]->dims().size()) {
+      case 0:
+        shape[i] = 1;
+        break;
+      case 1:
+        shape[i] = ins[i]->dims()[0];
+        break;
+      default:
+        PADDLE_THROW(phi::errors::InvalidArgument(
+            "Expected scalar or 1D tensor in the tensor list but got tensor "
+            "%d: ",
+            i));
     }
+  }
 
-    for (int64_t i = 0; i < size; i++) {
-      std::vector<int64_t> view_shape(size, 1);
-      view_shape[i] = shape[i];
+  for (int64_t i = 0; i < size; i++) {
+    std::vector<int64_t> view_shape(size, 1);
+    view_shape[i] = shape[i];
 
-      phi::DDim out_dims_reshape = phi::make_ddim(view_shape);
-      phi::DenseTensor reshape_ins_tensor(*ins[i]);
-      phi::DenseTensorMeta reshape_ins_tensor_meta = {ins[i]->dtype(), out_dims_reshape};
-      reshape_ins_tensor.set_meta(reshape_ins_tensor_meta);
+    phi::DDim out_dims_reshape = phi::make_ddim(view_shape);
+    phi::DenseTensor reshape_ins_tensor(*ins[i]);
+    reshape_ins_tensor.Resize(out_dims_reshape);
 
-      phi::DDim out_dims = phi::make_ddim(shape);
-      phi::DenseTensorMeta out_tensor_meta = {outs[i]->dtype(), out_dims};
-      outs[i]->set_meta(out_tensor_meta);
-      dev_ctx.template Alloc<T>(outs[i]);
+    phi::DDim out_dims = phi::make_ddim(shape);
+    outs[i]->Resize(out_dims);
+    dev_ctx.template Alloc<T>(outs[i]);
 
-      NpuOpRunner runner;
-      runner.SetType("BroadcastTo")
-          .AddInput(reshape_ins_tensor)
-          .AddInput(dev_ctx, std::move(shape))
-          .AddOutput(*(outs[i]))
-          .Run(stream);
-    }
+    NpuOpRunner runner;
+    runner.SetType("BroadcastTo")
+        .AddInput(reshape_ins_tensor)
+        .AddInput(dev_ctx, std::move(shape))
+        .AddOutput(*(outs[i]))
+        .Run(stream);
+  }
 }
 
 }  // namespace custom_kernel
 
-PD_REGISTER_PLUGIN_KERNEL(
-    meshgrid, ascend, ALL_LAYOUT, custom_kernel::MeshgridKernel,
-    int,
-    int64_t,
-    float,
-    double) {}
+PD_REGISTER_PLUGIN_KERNEL(meshgrid,
+                          ascend,
+                          ALL_LAYOUT,
+                          custom_kernel::MeshgridKernel,
+                          int,
+                          // #ifdef PADDLE_WITH_ASCEND_INT64
+                          int64_t,
+                          // #endif
+                          float,
+                          phi::dtype::float16,
+                          double) {}
