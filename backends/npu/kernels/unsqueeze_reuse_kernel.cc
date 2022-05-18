@@ -26,26 +26,26 @@ namespace custom_kernel {
 
 }  // namespace custom_kernel
 
-PD_REGISTER_PLUGIN_KERNEL(
-    unsqueeze, ascend, ALL_LAYOUT, phi::UnsqueezeKernel,
-    bool,
-    int,
-    int8_t,
-// #ifdef PADDLE_WITH_ASCEND_INT64
-    int64_t,
-// #endif
-    float,
-    double) {}
+// PD_REGISTER_PLUGIN_KERNEL(
+//     unsqueeze, ascend, ALL_LAYOUT, phi::UnsqueezeKernel,
+//     bool,
+//     int,
+//     int8_t,
+// // #ifdef PADDLE_WITH_ASCEND_INT64
+//     int64_t,
+// // #endif
+//     float,
+//     double) {}
 
-PD_REGISTER_PLUGIN_KERNEL(unsqueeze_grad,
-                          ascend,
-                          ALL_LAYOUT,
-                          phi::UnsqueezeGradKernel,
-                          bool,
-                          int,
-                          int8_t,
-// #ifdef PADDLE_WITH_ASCEND_INT64
-                          int64_t,
-// #endif
-                          float,
-                          double) {}
+// PD_REGISTER_PLUGIN_KERNEL(unsqueeze_grad,
+//                           ascend,
+//                           ALL_LAYOUT,
+//                           phi::UnsqueezeGradKernel,
+//                           bool,
+//                           int,
+//                           int8_t,
+// // #ifdef PADDLE_WITH_ASCEND_INT64
+//                           int64_t,
+// // #endif
+//                           float,
+//                           double) {}
