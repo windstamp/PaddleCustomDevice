@@ -44,10 +44,6 @@ void DropoutRawKernel(const Context& dev_ctx,
 
   // only achieve the default `upscale_in_train` method
   if (!is_test) {
-    //   Tensor tmp_x(x->dtype());
-    //   Tensor tmp_out(out->dtype());
-    //   tmp_x.ShareDataWith(*x);
-    //   tmp_out.ShareDataWith(*out);
     phi::DenseTensor tmp_x(x);
     phi::DenseTensor tmp_out(*out);
 
