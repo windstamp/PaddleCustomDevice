@@ -63,6 +63,30 @@ void ReluGradKernel(const Context& dev_ctx,
 }
 
 template <typename T, typename Context>
+void Relu6Kernel(const Context& dev_ctx,
+                 const phi::DenseTensor& x,
+                 phi::DenseTensor* out) {
+  LOG(WARNING) << "!!!!!!!!!!!!!!!! here !!!!!!!!!!!!!";
+  dev_ctx.template Alloc<T>(out);
+  const auto& runner = NpuOpRunner("Relu6", {x}, {*out}, {});
+
+  auto stream = dev_ctx.stream();
+  runner.Run(stream);
+}
+
+template <typename T, typename Context>
+void Relu6GradKernel(const Context& dev_ctx,
+                     const phi::DenseTensor& out,
+                     const phi::DenseTensor& dout,
+                     phi::DenseTensor* dx) {
+  LOG(WARNING) << "!!!!!!!!!!!!!!!! here !!!!!!!!!!!!!";
+  auto stream = dev_ctx.stream();
+  dev_ctx.template Alloc<T>(dx);
+  const auto& runner = NpuOpRunner("Relu6Grad", {dout, out}, {*dx}, {});
+  runner.Run(stream);
+}
+
+template <typename T, typename Context>
 void LeakyReluKernel(const Context& dev_ctx,
                      const phi::DenseTensor& x,
                      float alpha,
@@ -112,29 +136,6 @@ void SigmoidGradKernel(const Context& dev_ctx,
   runner.Run(stream);
 }
 
-template <typename T, typename Context>
-void SqrtKernel(const Context& dev_ctx,
-                const phi::DenseTensor& x,
-                phi::DenseTensor* out) {
-  dev_ctx.template Alloc<T>(out);
-  auto stream = dev_ctx.stream();
-
-  const auto& runner = NpuOpRunner("Sqrt", {x}, {*out}, {});
-  runner.Run(stream);
-}
-
-template <typename T, typename Context>
-void SqrtGradKernel(const Context& dev_ctx,
-                    const phi::DenseTensor& out,
-                    const phi::DenseTensor& dout,
-                    phi::DenseTensor* dx) {
-  dev_ctx.template Alloc<T>(dx);
-  auto stream = dev_ctx.stream();
-
-  const auto& runner = NpuOpRunner("SqrtGrad", {out, dout}, {*dx}, {});
-  runner.Run(stream);
-}
-
 }  // namespace custom_kernel
 
 PD_REGISTER_PLUGIN_KERNEL(
@@ -153,6 +154,20 @@ PD_REGISTER_PLUGIN_KERNEL(relu_grad,
                           custom_kernel::ReluGradKernel,
                           float,
                           double) {}
+
+// PD_REGISTER_PLUGIN_KERNEL(
+//     relu6, ascend, ALL_LAYOUT, custom_kernel::Relu6Kernel,
+//     float,
+//     phi::dtype::float16,
+//     double) {}
+
+// PD_REGISTER_PLUGIN_KERNEL(relu6_grad,
+//                           ascend,
+//                           ALL_LAYOUT,
+//                           custom_kernel::Relu6GradKernel,
+//                           float,
+//                           phi::dtype::float16,
+//                           double) {}
 
 PD_REGISTER_PLUGIN_KERNEL(leaky_relu,
                           ascend,
@@ -182,22 +197,6 @@ PD_REGISTER_PLUGIN_KERNEL(sigmoid_grad,
                           ascend,
                           ALL_LAYOUT,
                           custom_kernel::SigmoidGradKernel,
-                          float,
-                          phi::dtype::float16,
-                          double) {}
-
-PD_REGISTER_PLUGIN_KERNEL(sqrt,
-                          ascend,
-                          ALL_LAYOUT,
-                          custom_kernel::SqrtKernel,
-                          float,
-                          phi::dtype::float16,
-                          double) {}
-
-PD_REGISTER_PLUGIN_KERNEL(sqrt_grad,
-                          ascend,
-                          ALL_LAYOUT,
-                          custom_kernel::SqrtGradKernel,
                           float,
                           phi::dtype::float16,
                           double) {}
